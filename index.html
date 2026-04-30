@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Feynman OCI — Método de Estudo Ativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #141414;
+    --bg3: #1a1a1a;
+    --bg4: #222222;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0ede6;
+    --text2: #9e9b94;
+    --text3: #5a5854;
+    --amber: #e8a030;
+    --amber2: #f0b84a;
+    --amber-dim: rgba(232,160,48,0.12);
+    --amber-dim2: rgba(232,160,48,0.06);
+    --green: #4caf78;
+    --green-dim: rgba(76,175,120,0.12);
+    --blue: #5b9bd5;
+    --blue-dim: rgba(91,155,213,0.12);
+    --red: #d45b5b;
+    --red-dim: rgba(212,91,91,0.1);
+    --radius: 6px;
+    --radius2: 10px;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .logo-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 0 12px;
+    margin: 20px 0 8px;
+  }
+  .nav-section-label:first-child { margin-top: 4px; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    position: relative;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: var(--amber-dim);
+    color: var(--amber);
+    border-color: rgba(232,160,48,0.2);
+  }
+  .nav-icon {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+  .nav-item.active .nav-icon { opacity: 1; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--amber);
+    color: #000;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 100px;
+    font-family: var(--font-mono);
+  }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .progress-mini-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .progress-mini-bar {
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .progress-mini-fill {
+    height: 100%;
+    background: var(--amber);
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(13,13,13,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 36px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+  }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  .timer-pill {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .timer-pill:hover { border-color: var(--amber); color: var(--amber); }
+  .timer-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text3);
+    transition: background 0.3s;
+  }
+  .timer-dot.running { background: var(--green); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── CONTENT ── */
+  .content {
+    padding: 40px 36px;
+    max-width: 900px;
+  }
+
+  .page { display: none; animation: fadeIn 0.25s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── PAGE HEADERS ── */
+  .page-header { margin-bottom: 36px; }
+  .page-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 36px;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .page-desc { color: var(--text2); font-size: 14px; max-width: 560px; line-height: 1.7; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border2); }
+  .card-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .card-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .tag-core { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,155,213,0.2); }
+  .tag-service { background: var(--green-dim); color: var(--green); border: 1px solid rgba(76,175,120,0.2); }
+  .tag-security { background: var(--red-dim); color: var(--red); border: 1px solid rgba(212,91,91,0.2); }
+  .tag-arch { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(232,160,48,0.2); }
+
+  .card-title { font-family: var(--font-display); font-size: 20px; color: var(--text); line-height: 1.2; }
+  .card-desc { font-size: 13.5px; color: var(--text2); line-height: 1.7; margin-bottom: 14px; }
+  .analogy-box {
+    background: var(--amber-dim2);
+    border: 1px solid rgba(232,160,48,0.15);
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .analogy-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 4px;
+  }
+
+  .card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+  .btn-primary {
+    background: var(--amber);
+    color: #000;
+    border-color: var(--amber);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--amber2); border-color: var(--amber2); color: #000; }
+  .btn-ghost { border-color: transparent; }
+  .btn-ghost:hover { background: var(--bg3); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-danger { border-color: rgba(212,91,91,0.3); color: var(--red); }
+  .btn-danger:hover { background: var(--red-dim); }
+
+  /* ── SESSION PAGE ── */
+  .step-indicator {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    height: 1px;
+    background: var(--border2);
+    z-index: 0;
+  }
+  .step-dot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+  }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    transition: all 0.25s;
+  }
+  .step-dot.active { background: var(--amber); border-color: var(--amber); color: #000; font-weight: 500; }
+  .step-dot.done { background: var(--bg3); border-color: var(--green); color: var(--green); }
+  .step-dot-label { font-size: 10px; color: var(--text3); text-align: center; line-height: 1.3; max-width: 70px; }
+  .step-dot-wrap.active .step-dot-label { color: var(--amber); }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeIn 0.2s ease; }
+
+  .step-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .step-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .step-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .step-num-1 { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,155,213,0.25); }
+  .step-num-2 { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(232,160,48,0.25); }
+  .step-num-3 { background: var(--red-dim); color: var(--red); border: 1px solid rgba(212,91,91,0.25); }
+  .step-num-4 { background: var(--green-dim); color: var(--green); border: 1px solid rgba(76,175,120,0.25); }
+
+  .step-card-title { font-family: var(--font-display); font-size: 18px; color: var(--text); }
+  .step-card-desc { font-size: 13.5px; color: var(--text2); line-height: 1.7; margin-bottom: 20px; }
+
+  .concept-display {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .concept-display-name {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  .concept-display-title { font-family: var(--font-display); font-size: 18px; color: var(--text); margin-bottom: 8px; }
+  .concept-display-text { font-size: 13.5px; color: var(--text2); line-height: 1.7; }
+
+  textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    resize: vertical;
+    min-height: 140px;
+    transition: border-color 0.15s;
+    margin-bottom: 16px;
+  }
+  textarea:focus { outline: none; border-color: rgba(232,160,48,0.4); }
+  textarea::placeholder { color: var(--text3); }
+
+  .gap-entry {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .gap-entry input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 9px 14px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .gap-entry input:focus { outline: none; border-color: rgba(232,160,48,0.4); }
+  .gap-entry input::placeholder { color: var(--text3); }
+
+  .gap-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+  .gap-chip {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 4px 12px 4px 10px;
+    font-size: 12px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .gap-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+  .gap-chip-remove {
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.1s;
+  }
+  .gap-chip-remove:hover { color: var(--red); }
+
+  /* ── METRICS ROW ── */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .metric-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 16px 18px;
+  }
+  .metric-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .metric-val { font-family: var(--font-display); font-size: 26px; color: var(--text); line-height: 1; }
+  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── TIMER MODAL ── */
+  .timer-big {
+    font-family: var(--font-display);
+    font-size: 72px;
+    color: var(--text);
+    text-align: center;
+    margin: 24px 0;
+    letter-spacing: -2px;
+    transition: color 0.5s;
+  }
+  .timer-big.warning { color: var(--amber); }
+  .timer-big.urgent { color: var(--red); }
+
+  /* ── PROMPTS PAGE ── */
+  .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .prompt-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .prompt-card:hover { border-color: var(--border2); background: var(--bg3); transform: translateY(-1px); }
+  .prompt-card-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+  .prompt-card-title { font-weight: 500; font-size: 14px; color: var(--text); margin-bottom: 6px; }
+  .prompt-card-desc { font-size: 12px; color: var(--text3); line-height: 1.6; }
+  .prompt-card-tag {
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  /* ── MODAL OVERLAY ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius2);
+    padding: 32px;
+    max-width: 580px;
+    width: 100%;
+    transform: scale(0.96);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: scale(1); }
+  .modal-title { font-family: var(--font-display); font-size: 22px; color: var(--text); margin-bottom: 8px; }
+  .modal-desc { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  .prompt-text-box {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .copy-success {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--green);
+    color: #000;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .copy-success.show { opacity: 1; transform: translateY(0); }
+
+  /* ── GAPS DASHBOARD ── */
+  .gap-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .gap-list-item:last-child { border-bottom: none; }
+  .gap-list-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+    min-width: 20px;
+    margin-top: 2px;
+  }
+  .gap-list-text { font-size: 14px; color: var(--text2); flex: 1; line-height: 1.6; }
+  .gap-concept-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text3);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .gap-resolve-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .gap-resolve-btn:hover { border-color: var(--green); color: var(--green); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 14px; opacity: 0.4; }
+  .empty-title { font-family: var(--font-display); font-size: 20px; color: var(--text2); margin-bottom: 6px; }
+  .empty-desc { font-size: 13px; line-height: 1.6; }
+
+  /* ── CYCLE COMPLETE ── */
+  .cycle-complete {
+    background: var(--green-dim);
+    border: 1px solid rgba(76,175,120,0.25);
+    border-radius: var(--radius2);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .cycle-complete-title { font-family: var(--font-display); font-size: 18px; color: var(--green); margin-bottom: 6px; }
+  .cycle-complete-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  /* ── SELECT CONCEPT ── */
+  .concept-select-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .concept-select-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .concept-select-item:hover { border-color: rgba(232,160,48,0.4); background: var(--amber-dim2); }
+  .concept-select-item.selected { border-color: var(--amber); background: var(--amber-dim); }
+  .concept-select-name { font-weight: 500; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  .concept-select-tag { font-family: var(--font-mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* mobile sidebar toggle */
+  .menu-toggle {
+    display: none;
+    position: fixed;
+    top: 14px; left: 14px;
+    z-index: 300;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 18px;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .content { padding: 20px 18px; }
+    .metrics-row { grid-template-columns: 1fr 1fr; }
+    .prompt-grid { grid-template-columns: 1fr; }
+    .concept-select-grid { grid-template-columns: 1fr; }
+    .menu-toggle { display: block; }
+    .topbar { padding: 0 18px 0 54px; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 100px; }
+
+  /* ── FEYNMAN QUOTE ── */
+  .quote-block {
+    border-left: 3px solid var(--amber);
+    padding: 12px 18px;
+    margin: 20px 0;
+    background: var(--amber-dim2);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .quote-text { font-family: var(--font-display); font-size: 15px; font-style: italic; color: var(--text2); line-height: 1.6; }
+  .quote-author { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-top: 6px; letter-spacing: 0.08em; }
+
+  .info-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .info-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .checkbox-row input[type=checkbox] {
+    width: 16px; height: 16px;
+    accent-color: var(--amber);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .checkbox-label { font-size: 13.5px; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-label">Método ativo</div>
+      <div class="logo-title">Feynman<br>OCI</div>
+      <div class="logo-sub">Foundations · 2024–1</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Estudo</div>
+      <div class="nav-item active" onclick="navigate('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="navigate('conceitos')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+        Conceitos OCI
+        <span class="nav-badge" id="badge-conceitos">8</span>
+      </div>
+      <div class="nav-item" onclick="navigate('sessao')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+        Sessão ativa
+      </div>
+
+      <div class="nav-section-label">Análise</div>
+      <div class="nav-item" onclick="navigate('gaps')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
+        Meus gaps
+        <span class="nav-badge" id="badge-gaps" style="display:none;background:#d45b5b;">0</span>
+      </div>
+      <div class="nav-item" onclick="navigate('prompts')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12v8H2z" rx="1"/><path d="M5 13h6"/><path d="M8 11v2"/></svg>
+        Prompts IA
+      </div>
+
+      <div class="nav-section-label">Método</div>
+      <div class="nav-item" onclick="navigate('metodo')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 6v2l1 1"/></svg>
+        Como funciona
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="progress-mini-label">
+        <span>Progresso geral</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-mini-bar">
+        <div class="progress-mini-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="timer-pill" onclick="toggleTimer()" id="timerPill">
+          <div class="timer-dot" id="timerDot"></div>
+          <span id="timerDisplay">15:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div class="page-eyebrow">Início</div>
+          <div class="page-title">Bom estudo,<br><em>aprenda de verdade.</em></div>
+          <div class="page-desc">15 minutos por dia com o método Feynman valem mais do que horas de leitura passiva. Aqui você estuda ativamente.</div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-label">Sessões feitas</div>
+            <div class="metric-val" id="m-sessions">0</div>
+            <div class="metric-sub">ciclos completos</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Gaps ativos</div>
+            <div class="metric-val" id="m-gaps">0</div>
+            <div class="metric-sub">pontos a preencher</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Conceitos vistos</div>
+            <div class="metric-val" id="m-concepts">0/8</div>
+            <div class="metric-sub">de 8 tópicos</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Tempo de estudo</div>
+            <div class="metric-val" id="m-time">0m</div>
+            <div class="metric-sub">acumulado</div>
+          </div>
+        </div>
+
+        <div class="quote-block">
+          <div class="quote-text">"A primeira etapa para conhecer algo é ter a coragem de admitir que você não sabe."</div>
+          <div class="quote-author">— Richard P. Feynman</div>
+        </div>
+
+        <div style="margin-top:28px;">
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">Começar agora</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="navigate('sessao')">→ Iniciar sessão de 15min</button>
+            <button class="btn" onclick="navigate('conceitos')">Ver todos os conceitos</button>
+            <button class="btn" onclick="navigate('prompts')">Prompts para IA</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">Os 4 passos do método</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="info-row"><span class="info-icon" style="color:var(--blue);">①</span><span><strong style="color:var(--text);font-weight:500;">Leitura com intenção</strong> — Leia o conceito buscando o sentido, não a memorização.</span></div>
+          <div class="info-row"><span class="info-icon" style="color:var(--amber);">②</span><span><strong style="color:var(--text);font-weight:500;">Produção ativa</strong> — Feche o material e explique com suas palavras. O erro revela o gap.</span></div>
+          <div class="info-row"><span class="info-icon" style="color:var(--red);">③</span><span><strong style="color:var(--text);font-weight:500;">Mapeamento de gaps</strong> — Onde travou? Esses pontos são o aprendizado real.</span></div>
+          <div class="info-row"><span class="info-icon" style="color:var(--green);">④</span><span><strong style="color:var(--text);font-weight:500;">Preenchimento cirúrgico</strong> — Volte apenas ao que faltou. Repita o ciclo.</span></div>
+        </div>
+      </div>
+
+      <!-- CONCEITOS -->
+      <div class="page" id="page-conceitos">
+        <div class="page-header">
+          <div class="page-eyebrow">Base de conhecimento</div>
+          <div class="page-title">Conceitos OCI</div>
+          <div class="page-desc">8 tópicos essenciais para a certificação Foundations. Cada um com analogia do mundo real — o coração do método Feynman.</div>
+        </div>
+        <div id="concepts-render"></div>
+      </div>
+
+      <!-- SESSÃO -->
+      <div class="page" id="page-sessao">
+        <div class="page-header">
+          <div class="page-eyebrow">Ciclo Feynman</div>
+          <div class="page-title">Sessão ativa</div>
+          <div class="page-desc">Siga os 4 passos. 15 minutos de engajamento ativo valem mais do que 1 hora de leitura.</div>
+        </div>
+
+        <div class="step-indicator" id="stepIndicator">
+          <div class="step-dot-wrap active" id="sdot1" onclick="jumpStep(1)">
+            <div class="step-dot active" id="snum1">1</div>
+            <div class="step-dot-label">Leitura</div>
+          </div>
+          <div class="step-dot-wrap" id="sdot2" onclick="jumpStep(2)">
+            <div class="step-dot" id="snum2">2</div>
+            <div class="step-dot-label">Explicar</div>
+          </div>
+          <div class="step-dot-wrap" id="sdot3" onclick="jumpStep(3)">
+            <div class="step-dot" id="snum3">3</div>
+            <div class="step-dot-label">Gaps</div>
+          </div>
+          <div class="step-dot-wrap" id="sdot4" onclick="jumpStep(4)">
+            <div class="step-dot" id="snum4">4</div>
+            <div class="step-dot-label">Preencher</div>
+          </div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="step-panel active" id="sp1">
+          <div class="step-card">
+            <div class="step-card-header">
+              <div class="step-num step-num-1">1</div>
+              <div class="step-card-title">Escolha o conceito e leia com intenção</div>
+            </div>
+            <div class="step-card-desc">Selecione um conceito abaixo. Leia com calma — tente capturar o sentido geral, não memorizar. Máximo 3–4 minutos de leitura.</div>
+
+            <div style="margin-bottom:18px;">
+              <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Selecionar conceito</div>
+              <div class="concept-select-grid" id="conceptSelectGrid"></div>
+            </div>
+
+            <div id="step1-concept-view" style="display:none;">
+              <div class="concept-display">
+                <div class="concept-display-name" id="s1-tag">—</div>
+                <div class="concept-display-title" id="s1-title">—</div>
+                <div class="concept-display-text" id="s1-desc">—</div>
+                <div class="analogy-box" style="margin-top:14px;margin-bottom:0;">
+                  <div class="analogy-label">Analogia</div>
+                  <div id="s1-analogy">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-row" style="margin-bottom:20px;">
+              <span class="info-icon">💡</span>
+              <span>Leia o conceito. Depois <strong style="color:var(--text);font-weight:500;">feche mentalmente</strong> o material e passe para o passo 2 — sem olhar de volta.</span>
+            </div>
+            <button class="btn btn-primary" onclick="goStep(2)" id="btn-step1-next" disabled>Material lido — fechar e explicar →</button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-panel" id="sp2">
+          <div class="step-card">
+            <div class="step-card-header">
+              <div class="step-num step-num-2">2</div>
+              <div class="step-card-title">Explique com suas próprias palavras</div>
+            </div>
+            <div class="step-card-desc">Material fechado. Escreva abaixo como você explicaria este conceito para alguém que nunca ouviu falar de OCI. Pode ser errado — <em style="color:var(--amber);">especialmente se for errado.</em></div>
+
+            <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;" id="s2-concept-ref">Explicando: —</div>
+            <textarea id="explanation-ta" placeholder="Escreva sua explicação aqui... Não se preocupe com erros. Escreva o que você entendeu, mesmo que incompleto. 'Tenancy é tipo um espaço separado que a Oracle te dá, tipo um...'" oninput="checkStep2()"></textarea>
+
+            <div class="checkbox-row" onclick="toggleCheck('check2')">
+              <input type="checkbox" id="check2" onchange="checkStep2()" />
+              <div class="checkbox-label">Fiz meu melhor para explicar sem olhar o material de volta</div>
+            </div>
+            <div style="margin-top:14px;">
+              <button class="btn btn-primary" id="btn-step2-next" onclick="goStep(3)" disabled>Identificar onde travei →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-panel" id="sp3">
+          <div class="step-card">
+            <div class="step-card-header">
+              <div class="step-num step-num-3">3</div>
+              <div class="step-card-title">Mapeie seus gaps</div>
+            </div>
+            <div class="step-card-desc">Onde a explicação travou? Onde você ficou vago, hesitou, ou não encontrou a palavra? Registre cada ponto — esses são exatamente o que o cérebro precisa aprender.</div>
+
+            <div class="info-row" style="margin-bottom:16px;">
+              <span class="info-icon">⚡</span>
+              <span>O gap não é o fracasso — <strong style="color:var(--text);font-weight:500;">é o aprendizado.</strong> O momento em que você trava cria uma demanda real no cérebro por aquela informação.</span>
+            </div>
+
+            <div class="gap-entry">
+              <input type="text" id="gap-input-field" placeholder="ex: não lembrei a diferença entre VCN e subnet..." onkeydown="if(event.key==='Enter')addGap()" />
+              <button class="btn btn-sm" onclick="addGap()">+ gap</button>
+            </div>
+            <div class="gap-chips" id="gap-chips-display"></div>
+
+            <button class="btn btn-primary" onclick="goStep(4)">Ir preencher os gaps →</button>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="step-panel" id="sp4">
+          <div class="step-card">
+            <div class="step-card-header">
+              <div class="step-num step-num-4">4</div>
+              <div class="step-card-title">Preenchimento cirúrgico + novo ciclo</div>
+            </div>
+            <div class="step-card-desc">Volte ao material <strong style="color:var(--text);font-weight:500;">apenas</strong> para preencher os gaps abaixo. Não releia tudo. Depois, feche novamente e tente o ciclo de novo.</div>
+
+            <div id="s4-gaps-review" style="margin-bottom:20px;"></div>
+            <div id="s4-concept-review" class="concept-display" style="margin-bottom:20px;"></div>
+
+            <div id="cycle-complete-msg" class="cycle-complete" style="display:none;">
+              <div class="cycle-complete-title">Ciclo completo!</div>
+              <div class="cycle-complete-desc">Você preencheu os gaps e está pronto para o próximo ciclo. Cada repetição aprofunda a memória real.</div>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="newCycle()">↺ Novo ciclo com o mesmo conceito</button>
+              <button class="btn" onclick="navigate('conceitos')">Escolher outro conceito</button>
+              <button class="btn btn-ghost" onclick="finishSession()">Encerrar sessão ✓</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GAPS -->
+      <div class="page" id="page-gaps">
+        <div class="page-header">
+          <div class="page-eyebrow">Análise</div>
+          <div class="page-title">Meus gaps</div>
+          <div class="page-desc">Cada ponto aqui é exatamente onde o aprendizado real acontece. O silêncio e a hesitação revelam o mapa real do seu entendimento.</div>
+        </div>
+
+        <div class="metrics-row" style="grid-template-columns:repeat(3,1fr);">
+          <div class="metric-card">
+            <div class="metric-label">Gaps ativos</div>
+            <div class="metric-val" id="gm-active">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Resolvidos</div>
+            <div class="metric-val" id="gm-resolved">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Taxa de resolução</div>
+            <div class="metric-val" id="gm-rate">—</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0 24px;">
+          <div id="gaps-list-render" style="padding:8px 0;"></div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="card">
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">Teste de simplicidade — Feynman</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.7;">Escolha um conceito e tente explicar para uma criança de 10 anos, sem jargão técnico. Se precisar de termos técnicos para explicar, você ainda não entendeu de verdade.</div>
+          <textarea placeholder="Escreva aqui sua explicação simples... Sem siglas, sem jargão. Como você explicaria o que é 'Tenancy' para um amigo que nunca usou computador?" style="min-height:120px;margin-bottom:12px;"></textarea>
+          <button class="btn btn-primary" onclick="showPromptModal('simplicity')">Avaliar com IA →</button>
+        </div>
+      </div>
+
+      <!-- PROMPTS -->
+      <div class="page" id="page-prompts">
+        <div class="page-header">
+          <div class="page-eyebrow">Ferramentas</div>
+          <div class="page-title">Prompts para IA</div>
+          <div class="page-desc">Cada prompt ativa um modo diferente de aprendizado baseado no método Feynman. Copie e use no ChatGPT, Claude, ou qualquer IA.</div>
+        </div>
+
+        <div class="prompt-grid" id="prompt-grid-render"></div>
+      </div>
+
+      <!-- MÉTODO -->
+      <div class="page" id="page-metodo">
+        <div class="page-header">
+          <div class="page-eyebrow">Fundamento</div>
+          <div class="page-title">Como funciona</div>
+          <div class="page-desc">O método por trás de cada funcionalidade deste app.</div>
+        </div>
+
+        <div class="quote-block">
+          <div class="quote-text">"Eu aprendi muito cedo a diferença entre saber o nome de algo e saber algo."</div>
+          <div class="quote-author">— Richard P. Feynman, físico, Prêmio Nobel 1965</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="font-family:var(--font-display);font-size:18px;margin-bottom:12px;">O problema com o estudo convencional</div>
+          <div class="card-desc">Quando você lê uma lista de flashcards — "Tenancy: espaço isolado dentro da OCI" — seu cérebro cria uma associação entre dois rótulos. Isso funciona para uma prova de múltipla escolha. Não funciona quando você precisa aplicar o conceito em um cenário real, porque o conceito não é o rótulo — é a compreensão.</div>
+        </div>
+
+        <div style="display:grid;gap:12px;">
+          <div class="info-row">
+            <span class="info-icon" style="font-size:16px;color:var(--blue);">①</span>
+            <div><strong style="color:var(--text);font-weight:500;">Exposição bruta com intenção</strong><br><span style="font-size:12px;">Leia o conceito buscando o sentido geral. O cérebro faz apostas e preenche lacunas — isso ativa os mesmos circuitos que usamos para aprender linguagem naturalmente.</span></div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon" style="font-size:16px;color:var(--amber);">②</span>
+            <div><strong style="color:var(--text);font-weight:500;">Produção ativa</strong><br><span style="font-size:12px;">Fechar o material e explicar revela o "mapa real" do entendimento — não o que você imagina saber. A familiaridade não é conhecimento.</span></div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon" style="font-size:16px;color:var(--red);">③</span>
+            <div><strong style="color:var(--text);font-weight:500;">Desejável dificuldade</strong><br><span style="font-size:12px;">O momento de travar cria uma necessidade real. Quando você busca a resposta depois de sentir essa necessidade, ela entra na memória de longo prazo — não como dado novo, mas como resposta a uma pergunta que o cérebro já fazia.</span></div>
+          </div>
+          <div class="info-row">
+            <span class="info-icon" style="font-size:16px;color:var(--green);">④</span>
+            <div><strong style="color:var(--text);font-weight:500;">Preenchimento cirúrgico</strong><br><span style="font-size:12px;">Você não relê tudo — vai direto ao que faltou. Isso evita o desperdício e maximiza a eficiência dos 15 minutos disponíveis.</span></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="card">
+          <div class="card-title" style="font-family:var(--font-display);font-size:18px;margin-bottom:12px;">Por que 15 minutos?</div>
+          <div class="card-desc">O cérebro aprende por uso, necessidade, tentativa e erro — não por saturação. 15 minutos de engajamento ativo com o ciclo correto produzem mais retenção do que 1 hora de leitura passiva. A quantidade não é o fator — a qualidade do processamento é.</div>
+        </div>
+      </div>
+
+    </div><!-- .content -->
+  </main>
+</div><!-- .app -->
+
+<!-- MODAL: Prompt -->
+<div class="modal-overlay" id="promptModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Prompt</div>
+    <div class="modal-desc" id="modalDesc"></div>
+    <div class="prompt-text-box" id="modalPromptText"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('promptModal')">Fechar</button>
+      <button class="btn btn-primary" onclick="copyPrompt()">Copiar prompt</button>
+    </div>
+  </div>
+</div>
+
+<div class="copy-success" id="copySuccess">Prompt copiado!</div>
+
+<script>
+// ── DATA ──
+const CONCEPTS = [
+  {
+    id:'tenancy', tag:'core', label:'Fundamentos', title:'Tenancy e Regiões',
+    desc:'Tenancy é o seu espaço isolado dentro da Oracle Cloud — é o limite máximo de isolamento de recursos. Tudo que você cria na OCI existe dentro da sua Tenancy. Regiões são localizações geográficas físicas independentes onde a OCI opera, cada uma composta por múltiplos Availability Domains (ADs). ADs são data centers fisicamente separados dentro de uma região.',
+    analogy:'Pense num grande prédio de apartamentos: a OCI global é o prédio. Sua Tenancy é o seu apartamento — privado, isolado. As Regiões são cidades diferentes onde o prédio tem filiais. Os Availability Domains são andares diferentes dentro de cada filial.'
+  },
+  {
+    id:'compartments', tag:'core', label:'Fundamentos', title:'Compartments',
+    desc:'Compartments (Compartimentos) são contêineres lógicos dentro da Tenancy usados para organizar e isolar recursos relacionados. Você aplica políticas de acesso IAM, orçamentos e cotas por compartimento. Compartimentos podem ser aninhados (hierarquia de até 6 níveis). Todo recurso da OCI pertence a um compartimento — inclusive outros compartimentos.',
+    analogy:'Se a Tenancy é o seu apartamento, os Compartments são os cômodos. A cozinha tem suas regras (equipamentos de cozinha, acesso apenas ao cozinheiro), o escritório tem as suas. Você pode ter cômodos dentro de cômodos — armários dentro de quartos.'
+  },
+  {
+    id:'iam', tag:'security', label:'Segurança', title:'IAM — Identity and Access Management',
+    desc:'IAM controla quem pode fazer o quê em quais recursos da OCI. Os elementos centrais: Users (identidades individuais), Groups (conjuntos de usuários), Dynamic Groups (grupos baseados em regras para recursos como instâncias compute), Policies (regras em linguagem quase natural que concedem permissões a grupos sobre recursos em compartimentos). Sintaxe: Allow <grupo> to <verbo> <recurso> in <compartimento>.',
+    analogy:'Imagine um condomínio. Users são os moradores. Groups são categorias: moradores, funcionários, visitantes. Policies são as regras do regulamento interno: "Moradores podem usar a piscina. Funcionários podem acessar o depósito. Visitantes só podem entrar com acompanhante."'
+  },
+  {
+    id:'compute', tag:'service', label:'Serviços', title:'Compute — Instâncias e Shapes',
+    desc:'Instâncias Compute são VMs (máquinas virtuais) ou BMs (bare metal) na OCI. O Shape define a quantidade de OCPUs, memória RAM e largura de banda. Shapes Flex permitem personalizar CPU e memória dentro de limites. Instâncias rodam dentro de uma VCN/subnet. O Boot Volume é o disco principal (mínimo 46GB). Você paga por hora de uso do shape.',
+    analogy:'Alugar uma instância compute é como alugar um computador num datacenter. O Shape é o modelo do computador (um básico de escritório vs. uma workstation potente). Flex Shape é como montar seu computador escolhendo quantos núcleos e quanta RAM você quer.'
+  },
+  {
+    id:'storage', tag:'service', label:'Serviços', title:'Object, Block e File Storage',
+    desc:'Object Storage: para dados não estruturados (arquivos, backups, imagens). Estrutura: Namespace > Bucket > Object. Acesso via HTTP. Altamente durável. Block Volume: disco virtual conectado a uma instância compute via iSCSI. Performance previsível. Precisa ser formatado. File Storage: sistema de arquivos compartilhado acessível por múltiplas instâncias via NFS. Ideal para workloads que compartilham dados.',
+    analogy:'Object Storage = galpão de armazenamento (você deposita e retira pelo endereço do objeto). Block Volume = HD externo conectado num só computador (precisa formatar antes de usar). File Storage = pasta compartilhada de uma empresa (todo mundo no escritório acessa ao mesmo tempo).'
+  },
+  {
+    id:'vcn', tag:'arch', label:'Arquitetura', title:'VCN e Componentes de Rede',
+    desc:'Virtual Cloud Network (VCN) é a rede virtual privada da OCI. Componentes: Subnets (públicas ou privadas), Internet Gateway (conecta à internet), NAT Gateway (saída para internet sem exposição pública), Service Gateway (acesso a serviços OCI sem internet), Security Lists (regras de firewall por subnet) e NSGs — Network Security Groups (regras por recurso específico, mais granular).',
+    analogy:'VCN é um bairro fechado particular. Subnets são quadras — públicas ficam na entrada, privadas no miolo. Internet Gateway é o portão principal. NAT Gateway é uma janela unidirecional (saída sem entrada). Security Lists são as regras do bairro inteiro. NSGs são as regras específicas de cada casa.'
+  },
+  {
+    id:'ha', tag:'arch', label:'Arquitetura', title:'Alta Disponibilidade e Fault Domains',
+    desc:'Fault Domains são agrupamentos de hardware dentro de um Availability Domain — proteção contra falhas de servidor físico, switch de rede ou unidade de energia. Cada AD tem 3 Fault Domains. Para HA dentro de um AD, distribua instâncias em Fault Domains diferentes. Para HA entre ADs (mais robusta), use balanceadores de carga e distribua recursos em múltiplos ADs. Para DR entre regiões, replique para outra Região.',
+    analogy:'Imagine geradores de energia num datacenter. Fault Domain = gerador separado. Se o gerador 1 falha, as máquinas nos geradores 2 e 3 continuam. AD = prédio diferente na mesma cidade (um incêndio não afeta o outro). Região = cidade diferente (uma inundação não afeta a outra).'
+  },
+  {
+    id:'security-arch', tag:'security', label:'Segurança', title:'Security Lists vs NSGs e WAF',
+    desc:'Security Lists aplicam-se a todas as instâncias de uma subnet — regras de ingress/egress com base em CIDR, porta e protocolo. NSGs (Network Security Groups) aplicam-se a recursos específicos — mais granular e recomendado para produção. Regras de NSG podem referenciar outros NSGs como fonte/destino. WAF (Web Application Firewall) protege aplicações web contra OWASP Top 10, DDoS de camada 7 e bots maliciosos.',
+    analogy:'Security List = regulamento do condomínio que vale para todo mundo num bloco. NSG = regras específicas para uma unidade: "Somente este apartamento pode receber entregas do porteiro". WAF = segurança especializada na porta da frente que verifica se o visitante não está disfarçado de carteiro para praticar golpe.'
+  }
+];
+
+const PROMPTS = [
+  {
+    icon:'🔬', title:'Explicação socrática', tag:'Descoberta guiada',
+    desc:'A IA explica por analogias e te faz perguntas para testar o entendimento real.',
+    iconBg:'var(--blue-dim)', iconColor:'var(--blue)',
+    text:`Atue como um professor que usa o método Feynman. Explique o conceito de [CONCEITO OCI] usando uma analogia do mundo real — sem jargão técnico. Depois me faça 3 perguntas progressivas para testar se eu realmente entendi o conceito, não apenas memorizei. Comece com a mais simples. Para cada resposta minha, me diga se acertei e por quê, depois aprofunde com a próxima pergunta.`
+  },
+  {
+    icon:'🎯', title:'Detector de gaps', tag:'Análise crítica',
+    desc:'Você explica, a IA aponta exatamente onde está vago ou incorreto — sem dar a resposta.',
+    iconBg:'var(--amber-dim)', iconColor:'var(--amber)',
+    text:`Vou te explicar o que entendi sobre [CONCEITO OCI] e você vai fazer APENAS UMA COISA: identificar onde minha explicação está vaga, errada ou incompleta — sem me dar a resposta correta ainda, apenas apontando o gap exato. Use a linguagem: "Você ficou vago quando disse...", "Esse ponto está incorreto porque...", "Faltou mencionar...". Pronto? Aqui vai minha explicação: [SUA EXPLICAÇÃO]`
+  },
+  {
+    icon:'🌍', title:'Analogia do mundo real', tag:'Compreensão profunda',
+    desc:'Transforma conceitos técnicos em situações do cotidiano que qualquer pessoa entende.',
+    iconBg:'var(--green-dim)', iconColor:'var(--green)',
+    text:`Para cada um dos seguintes conceitos OCI — [lista os conceitos que está estudando] — crie uma analogia do mundo físico/cotidiano que explique: o que é, para que serve, e quando eu escolheria um em vez do outro. A analogia deve ser tão clara que uma pessoa que nunca usou tecnologia conseguiria entender. Não use siglas ou termos técnicos na analogia em si.`
+  },
+  {
+    icon:'🧪', title:'Quiz socrático', tag:'Prática ativa',
+    desc:'Quiz onde a IA pergunta o porquê da sua resposta antes de avaliar — força raciocínio real.',
+    iconBg:'var(--red-dim)', iconColor:'var(--red)',
+    text:`Me faça um quiz socrático sobre OCI Foundations. Regra CRÍTICA: para cada resposta minha, você NÃO pode dizer se errei ou acertei imediatamente. Primeiro me pergunte: "Por que você escolheu essa opção?" Só após minha justificativa você avalia, corrige e explica o raciocínio completo. Depois pergunte se quero continuar ou aprofundar o tema. Pode começar.`
+  },
+  {
+    icon:'🏗️', title:'Construção progressiva', tag:'Arquitetura',
+    desc:'Aprenda conceitos complexos camada por camada, confirmando o entendimento antes de avançar.',
+    iconBg:'var(--blue-dim)', iconColor:'var(--blue)',
+    text:`Quero aprender [CONCEITO COMPLEXO OCI, ex: arquitetura de alta disponibilidade]. Use o método de construção progressiva: comece com o componente mais simples e fundamental. Me faça confirmar que entendi com uma explicação minha. Só então adicione a próxima camada de complexidade. Nunca avance sem minha confirmação. Se minha explicação estiver errada, corrija antes de continuar.`
+  },
+  {
+    icon:'📋', title:'Simulado inteligente', tag:'Preparação para prova',
+    desc:'Questões estilo exame com explicação do raciocínio — não só a resposta certa.',
+    iconBg:'var(--amber-dim)', iconColor:'var(--amber)',
+    text:`Atue como examinador da certificação OCI Foundations 2024-1. Me apresente uma questão de prova por vez, no formato real do exame. Após minha resposta, explique o raciocínio por trás da resposta correta — especialmente por que as outras alternativas estão erradas. Depois me pergunte: quero a próxima questão ou prefiro aprofundar este tema? Nível: intermediário.`
+  },
+  {
+    icon:'🔄', title:'Comparação forçada', tag:'Diferenciação',
+    desc:'Força você a articular a diferença entre conceitos similares que confundem na prova.',
+    iconBg:'var(--green-dim)', iconColor:'var(--green)',
+    text:`Me ajude a distinguir de vez entre: [CONCEITO A] e [CONCEITO B] na OCI. Não me dê uma tabela comparativa — isso é passivo. Em vez disso: (1) me faça descrever cada um com minhas palavras, (2) crie um cenário onde eu tenha que escolher entre os dois, (3) me peça para justificar minha escolha, (4) corrija meu raciocínio se necessário.`
+  },
+  {
+    icon:'🧠', title:'Teste de simplicidade', tag:'Verificação profunda',
+    desc:'O critério final de Feynman: se não consegue explicar simples, não entendeu de verdade.',
+    iconBg:'var(--red-dim)', iconColor:'var(--red)',
+    text:`Vou te dar minha explicação de [CONCEITO OCI] como se eu fosse explicar para uma criança de 10 anos, sem jargão técnico. Avalie: (1) a explicação está correta? (2) onde ainda há jargão escondido? (3) que perguntas uma criança curiosa faria que minha explicação não responderia? Aqui vai: [SUA EXPLICAÇÃO]`
+  }
+];
+
+// ── STATE ──
+let state = {
+  currentPage: 'dashboard',
+  currentStep: 1,
+  selectedConcept: null,
+  sessionGaps: [],
+  allGaps: JSON.parse(localStorage.getItem('feynman_gaps') || '[]'),
+  resolvedGaps: JSON.parse(localStorage.getItem('feynman_resolved') || '[]'),
+  sessions: parseInt(localStorage.getItem('feynman_sessions') || '0'),
+  studiedConcepts: JSON.parse(localStorage.getItem('feynman_studied') || '[]'),
+  totalMinutes: parseInt(localStorage.getItem('feynman_minutes') || '0'),
+  timerSeconds: 15 * 60,
+  timerRunning: false,
+  timerInterval: null,
+  sessionStartTime: null,
+  currentPrompt: ''
+};
+
+function saveState() {
+  localStorage.setItem('feynman_gaps', JSON.stringify(state.allGaps));
+  localStorage.setItem('feynman_resolved', JSON.stringify(state.resolvedGaps));
+  localStorage.setItem('feynman_sessions', state.sessions);
+  localStorage.setItem('feynman_studied', JSON.stringify(state.studiedConcepts));
+  localStorage.setItem('feynman_minutes', state.totalMinutes);
+}
+
+// ── NAV ──
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  items.forEach(item => {
+    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes("'" + page + "'")) {
+      item.classList.add('active');
+    }
+  });
+  const titles = { dashboard:'Dashboard', conceitos:'Conceitos OCI', sessao:'Sessão ativa', gaps:'Meus gaps', prompts:'Prompts IA', metodo:'Como funciona' };
+  document.getElementById('topbar-title').textContent = titles[page] || page;
+  state.currentPage = page;
+  if (page === 'gaps') renderGaps();
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0, 0);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ── RENDER CONCEPTS ──
+function renderConcepts() {
+  const container = document.getElementById('concepts-render');
+  container.innerHTML = CONCEPTS.map((c, i) => `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-tag tag-${c.tag}">${c.label}</span>
+        <div class="card-title">${c.title}</div>
+      </div>
+      <div class="card-desc">${c.desc}</div>
+      <div class="analogy-box">
+        <div class="analogy-label">Analogia Feynman</div>
+        ${c.analogy}
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-primary btn-sm" onclick="startSessionWith(${i})">→ Estudar agora</button>
+        <button class="btn btn-sm" onclick="markStudied('${c.id}')">✓ Marcar como visto</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function markStudied(id) {
+  if (!state.studiedConcepts.includes(id)) {
+    state.studiedConcepts.push(id);
+    saveState();
+    updateMetrics();
+  }
+}
+
+// ── RENDER SESSION CONCEPT SELECTOR ──
+function renderConceptSelector() {
+  const grid = document.getElementById('conceptSelectGrid');
+  grid.innerHTML = CONCEPTS.map((c, i) => `
+    <div class="concept-select-item ${state.selectedConcept === i ? 'selected' : ''}" onclick="selectConceptForSession(${i})" id="csi-${i}">
+      <div class="concept-select-name">${c.title}</div>
+      <div class="concept-select-tag tag-${c.tag}" style="display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;">${c.label}</div>
+    </div>
+  `).join('');
+}
+
+function selectConceptForSession(i) {
+  state.selectedConcept = i;
+  const c = CONCEPTS[i];
+  document.querySelectorAll('.concept-select-item').forEach((el, idx) => {
+    el.classList.toggle('selected', idx === i);
+  });
+  document.getElementById('s1-tag').textContent = c.label;
+  document.getElementById('s1-title').textContent = c.title;
+  document.getElementById('s1-desc').textContent = c.desc;
+  document.getElementById('s1-analogy').textContent = c.analogy;
+  document.getElementById('step1-concept-view').style.display = 'block';
+  document.getElementById('btn-step1-next').disabled = false;
+  document.getElementById('s2-concept-ref').textContent = 'Explicando: ' + c.title;
+}
+
+function startSessionWith(i) {
+  navigate('sessao');
+  goStep(1);
+  renderConceptSelector();
+  setTimeout(() => selectConceptForSession(i), 50);
+  if (!state.timerRunning) startTimer();
+}
+
+// ── STEPS ──
+function goStep(n) {
+  state.currentStep = n;
+  [1,2,3,4].forEach(s => {
+    document.getElementById('sp' + s).classList.toggle('active', s === n);
+    const dot = document.getElementById('snum' + s);
+    const wrap = document.getElementById('sdot' + s);
+    dot.classList.toggle('active', s === n);
+    dot.classList.toggle('done', s < n);
+    wrap.classList.toggle('active', s === n);
+  });
+  if (n === 4) renderStep4();
+  if (n === 1) renderConceptSelector();
+}
+
+function jumpStep(n) {
+  if (n <= state.currentStep || state.selectedConcept !== null) goStep(n);
+}
+
+function checkStep2() {
+  const ta = document.getElementById('explanation-ta');
+  const check = document.getElementById('check2');
+  const btn = document.getElementById('btn-step2-next');
+  btn.disabled = !(ta.value.trim().length > 20 && check.checked);
+}
+
+function toggleCheck(id) {
+  const el = document.getElementById(id);
+  el.checked = !el.checked;
+  checkStep2();
+}
+
+function addGap() {
+  const inp = document.getElementById('gap-input-field');
+  const val = inp.value.trim();
+  if (!val) return;
+  state.sessionGaps.push(val);
+  inp.value = '';
+  renderGapChips();
+}
+
+function removeGap(i) {
+  state.sessionGaps.splice(i, 1);
+  renderGapChips();
+}
+
+function renderGapChips() {
+  const container = document.getElementById('gap-chips-display');
+  if (!state.sessionGaps.length) { container.innerHTML = ''; return; }
+  container.innerHTML = state.sessionGaps.map((g, i) => `
+    <div class="gap-chip">
+      <div class="gap-chip-dot"></div>
+      ${g}
+      <span class="gap-chip-remove" onclick="removeGap(${i})">×</span>
+    </div>
+  `).join('');
+}
+
+function renderStep4() {
+  const c = state.selectedConcept !== null ? CONCEPTS[state.selectedConcept] : null;
+
+  const gapsDiv = document.getElementById('s4-gaps-review');
+  if (state.sessionGaps.length > 0) {
+    gapsDiv.innerHTML = `
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Gaps para preencher</div>
+      ${state.sessionGaps.map(g => `<div class="gap-chip" style="margin-bottom:7px;border-radius:var(--radius);padding:8px 12px;">${'<div class="gap-chip-dot"></div>'}${g}</div>`).join('')}
+    `;
+    state.allGaps.push(...state.sessionGaps.map(g => ({ text: g, concept: c ? c.title : '—', resolved: false, date: new Date().toLocaleDateString('pt-BR') })));
+    saveState();
+    updateMetrics();
+  } else {
+    gapsDiv.innerHTML = `<div class="cycle-complete"><div class="cycle-complete-title">Explicação completa!</div><div class="cycle-complete-desc">Você não registrou gaps — sua explicação estava coerente. Considere aumentar a complexidade ou estudar o próximo conceito.</div></div>`;
+    document.getElementById('cycle-complete-msg').style.display = 'none';
+  }
+
+  if (c) {
+    document.getElementById('s4-concept-review').innerHTML = `
+      <div class="concept-display-name">Revisão — ${c.label}</div>
+      <div class="concept-display-title">${c.title}</div>
+      <div class="concept-display-text">${c.desc}</div>
+      <div class="analogy-box" style="margin-top:12px;margin-bottom:0;"><div class="analogy-label">Analogia</div>${c.analogy}</div>
+    `;
+    markStudied(c.id);
+  }
+
+  state.sessions++;
+  saveState();
+  updateMetrics();
+}
+
+function newCycle() {
+  state.sessionGaps = [];
+  document.getElementById('explanation-ta').value = '';
+  document.getElementById('check2').checked = false;
+  document.getElementById('btn-step2-next').disabled = true;
+  document.getElementById('gap-chips-display').innerHTML = '';
+  goStep(2);
+}
+
+function finishSession() {
+  if (state.sessionStartTime) {
+    const elapsed = Math.round((Date.now() - state.sessionStartTime) / 60000);
+    state.totalMinutes += elapsed;
+    saveState();
+  }
+  stopTimer();
+  navigate('dashboard');
+}
+
+// ── TIMER ──
+function startTimer() {
+  if (state.timerRunning) return;
+  state.timerRunning = true;
+  state.sessionStartTime = Date.now();
+  state.timerSeconds = 15 * 60;
+  document.getElementById('timerDot').classList.add('running');
+  state.timerInterval = setInterval(() => {
+    if (state.timerSeconds > 0) {
+      state.timerSeconds--;
+      updateTimerDisplay();
+    } else {
+      stopTimer();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(state.timerInterval);
+  state.timerRunning = false;
+  document.getElementById('timerDot').classList.remove('running');
+}
+
+function toggleTimer() {
+  if (state.timerRunning) { stopTimer(); }
+  else { state.timerSeconds = 15 * 60; startTimer(); }
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(state.timerSeconds / 60);
+  const s = state.timerSeconds % 60;
+  const str = m + ':' + String(s).padStart(2, '0');
+  document.getElementById('timerDisplay').textContent = str;
+}
+
+// ── GAPS PAGE ──
+function renderGaps() {
+  const active = state.allGaps.filter(g => !g.resolved);
+  const resolved = state.allGaps.filter(g => g.resolved);
+  document.getElementById('gm-active').textContent = active.length;
+  document.getElementById('gm-resolved').textContent = resolved.length;
+  const total = state.allGaps.length;
+  document.getElementById('gm-rate').textContent = total > 0 ? Math.round(resolved.length / total * 100) + '%' : '—';
+
+  const list = document.getElementById('gaps-list-render');
+  if (active.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">○</div><div class="empty-title">Nenhum gap ativo</div><div class="empty-desc">Faça uma sessão ativa para começar a registrar seus pontos de aprendizado.</div></div>`;
+    return;
+  }
+  list.innerHTML = active.map((g, i) => `
+    <div class="gap-list-item">
+      <div class="gap-list-num">${String(i+1).padStart(2,'0')}</div>
+      <div style="flex:1;">
+        <div class="gap-list-text">${g.text}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <span class="gap-concept-tag">${g.concept}</span>
+          <span style="font-size:11px;color:var(--text3);">${g.date || ''}</span>
+        </div>
+      </div>
+      <button class="gap-resolve-btn" onclick="resolveGap(${state.allGaps.indexOf(g)})">✓ Resolvido</button>
+    </div>
+  `).join('');
+
+  const badge = document.getElementById('badge-gaps');
+  if (active.length > 0) {
+    badge.textContent = active.length;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function resolveGap(i) {
+  state.allGaps[i].resolved = true;
+  saveState();
+  renderGaps();
+  updateMetrics();
+}
+
+// ── PROMPTS ──
+function renderPrompts() {
+  const grid = document.getElementById('prompt-grid-render');
+  grid.innerHTML = PROMPTS.map((p, i) => `
+    <div class="prompt-card" onclick="showPromptModal(${i})">
+      <div class="prompt-card-icon" style="background:${p.iconBg};color:${p.iconColor};">${p.icon}</div>
+      <div class="prompt-card-title">${p.title}</div>
+      <div class="prompt-card-desc">${p.desc}</div>
+      <div class="prompt-card-tag">${p.tag}</div>
+    </div>
+  `).join('');
+}
+
+function showPromptModal(i) {
+  if (i === 'simplicity') {
+    state.currentPrompt = PROMPTS[7].text;
+    document.getElementById('modalTitle').textContent = 'Teste de simplicidade';
+    document.getElementById('modalDesc').textContent = 'Cole este prompt numa IA junto com sua explicação.';
+    document.getElementById('modalPromptText').textContent = PROMPTS[7].text;
+  } else {
+    const p = PROMPTS[i];
+    state.currentPrompt = p.text;
+    document.getElementById('modalTitle').textContent = p.title;
+    document.getElementById('modalDesc').textContent = p.desc + '\n\nSubstitua os campos entre [ ] pelo seu contexto antes de usar.';
+    document.getElementById('modalPromptText').textContent = p.text;
+  }
+  document.getElementById('promptModal').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function copyPrompt() {
+  navigator.clipboard.writeText(state.currentPrompt).then(() => {
+    const el = document.getElementById('copySuccess');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  });
+}
+
+// ── METRICS ──
+function updateMetrics() {
+  const active = state.allGaps.filter(g => !g.resolved).length;
+  document.getElementById('m-sessions').textContent = state.sessions;
+  document.getElementById('m-gaps').textContent = active;
+  document.getElementById('m-concepts').textContent = state.studiedConcepts.length + '/8';
+  const mins = state.totalMinutes;
+  document.getElementById('m-time').textContent = mins >= 60 ? Math.floor(mins/60) + 'h' + (mins%60 ? (mins%60)+'m' : '') : mins + 'm';
+
+  const pct = Math.round(state.studiedConcepts.length / 8 * 100);
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  const badge = document.getElementById('badge-gaps');
+  if (active > 0) { badge.textContent = active; badge.style.display = 'inline-block'; }
+  else { badge.style.display = 'none'; }
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderConcepts();
+  renderConceptSelector();
+  renderPrompts();
+  updateMetrics();
+
+  document.getElementById('promptModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('promptModal');
+  });
+});
+</script>
+</body>
+</html>
