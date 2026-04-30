@@ -4,7 +4,7 @@
 
 **Ocifeyn** é um web app de estudo ativo baseado na Técnica Feynman, construído para quem está se preparando para a certificação **Oracle Cloud Infrastructure Foundations 2024-1**. Sem flashcards, sem listas de vocabulário — só compreensão real em 15 minutos por dia.
 
-🔗 **[Abrir o app](https://seu-usuario.github.io/ocifeyn)**
+🔗 **[Abrir o app](https://luizfbarbosa.github.io/ocifeyn/)**
 
 ---
 
